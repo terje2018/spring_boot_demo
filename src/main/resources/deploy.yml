@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-boot-demo-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: spring-boot-demo
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: spring-boot-demo
+    spec:
+      containers:
+      - name: spring-boot-demo-pod
+        image: spring_boot_demo:0.1
+        ports:
+          - containerPort: 8666

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="orm.order">
+    <resultMap id="orderMap" type="me.terje.spring.model.Order">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="code" jdbcType="VARCHAR" property="code" />
+        <result column="price" jdbcType="DOUBLE" property="price" />
+        <result column="customer_id" jdbcType="INTEGER" property="customerId" />
+        <result column="order_date" jdbcType="TIMESTAMP" property="orderDate" />
+        <association property="logistics" javaType="me.terje.spring.model.Logistics" column="id" select="selectLogistics"/>
+        <collection property="items" javaType="ArrayList" ofType="me.terje.spring.model.Item" column="id" select="selectItems4Order"/>
+
+    </resultMap>
+
+    <!--allowMultiQueries=true in application.yml-->
+    <insert id="insertOrder" parameterType="me.terje.spring.model.Order">
+        insert into oorder (code,price,customer_id)
+            values (#{code},
+                    #{price},
+                    #{customerId});
+
+        set @oid=LAST_INSERT_ID();
+
+        insert into logistics (order_id,company_name,start_city,target_city,distance)
+            values (@oid,
+                    #{logistics.companyName},
+                    #{logistics.startCity},
+                    #{logistics.targetCity},
+                    #{logistics.distance});
+
+        update oorder set logistics_id=LAST_INSERT_ID() where id = @oid;
+
+        insert into item (order_id,name,code,product_date)
+            values
+            <foreach collection="items" item="item" separator=",">
+                    (@oid,#{item.name},#{item.code},#{item.productDate})
+            </foreach>
+
+    </insert>
+
+    <select id="selectItems4Order" resultMap="orm.item.itemMap">
+        select id,
+                order_id,
+                name,
+                code,
+                product_date,
+                add_date
+        from item where order_id = #{id}
+    </select>
+
+    <select id="selectLogistics" resultMap="orm.logistics.logisticsMap">
+        select id,
+        order_id,
+        company_name,
+        start_city,
+        target_city,
+        distance
+        from logistics where order_id = #{id}
+    </select>
+
+    <select id="selectOne" parameterType="java.lang.Integer" resultMap="orderMap">
+        select
+            o.id,
+            o.code,
+            o.price,
+            o.customer_id,
+            o.order_date
+        from oorder o where
+        o.id = #{id};
+    </select>
+
+    <update id="update" parameterType="me.terje.spring.model.Order">
+        update oorder o
+            set o.code = #{code},
+                o.price = #{price},
+                o.customer_id = #{customerId}
+            where o.id = #{id};
+
+        update logistics l
+            set l.company_name = #{logistics.companyName},
+                l.start_city = #{logistics.startCity},
+                l.target_city = #{logistics.targetCity},
+                l.distance = #{logistics.distance}
+            where l.order_id = #{id};
+
+        <foreach collection="items" item="item">
+            update item i
+                set i.name = #{item.name},
+                    i.code = #{item.code},
+                    i.product_date = #{item.productDate}
+                where i.order_id = #{id} and i.id = #{item.id};
+        </foreach>
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Integer">
+        delete from oorder where id = #{id}
+    </delete>
+
+</mapper>

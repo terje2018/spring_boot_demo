@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="orm.heartbeat">
+    <resultMap id="heartbeatMap" type="me.terje.spring.model.HeartBeat">
+        <result column="app_id" jdbcType="VARCHAR" property="appId" />
+        <result column="beat_num" jdbcType="BIGINT" property="beatNum" />
+        <result column="last_beat_time" jdbcType="TIMESTAMP" property="lastBeatTime" />
+        <result column="app_start_time" jdbcType="TIMESTAMP" property="appStartTime" />
+    </resultMap>
+
+    <select id="select_beat_num" parameterType="String" resultType="Integer">
+        select beat_num from heartbeat where app_id = #{appId};
+    </select>
+
+    <update id="beat" parameterType="java.util.HashMap"><!--不能将select_beat_num放入到这里，如果第一步select的话，会出现无法返回受影响的行数-->
+        update heartbeat set beat_num = (#{num} + 1) where app_id = #{appId};
+    </update>
+
+    <insert id="initial" parameterType="java.lang.String">
+        replace into heartbeat (app_id,beat_num,app_start_time) values (#{appId},0,now());
+    </insert>
+
+</mapper>

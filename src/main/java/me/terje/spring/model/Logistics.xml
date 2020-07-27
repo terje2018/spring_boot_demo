@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="orm.logistics">
+    <resultMap id="logisticsMap" type="me.terje.spring.model.Logistics">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="order_id" jdbcType="INTEGER" property="orderId" />
+        <result column="company_name" jdbcType="VARCHAR" property="companyName" />
+        <result column="start_city" jdbcType="VARCHAR" property="startCity" />
+        <result column="target_city" jdbcType="VARCHAR" property="targetCity" />
+        <result column="distance" jdbcType="INTEGER" property="distance" />
+    </resultMap>
+
+</mapper>
